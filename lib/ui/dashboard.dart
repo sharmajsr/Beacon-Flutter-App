@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/rendering.dart';
 import 'package:location/location.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,15 +13,18 @@ class Dashboard extends StatefulWidget {
   _DashboardState createState() => _DashboardState();
 }
 
+final FirebaseDatabase database = FirebaseDatabase.instance;
+
 class _DashboardState extends State<Dashboard> {
   GoogleMapController _controller;
   Marker marker;
   Circle circle;
-double latitude;
-double longitude;
-  Map<String,double> currentLocation;
-  StreamSubscription<Map<String,double>> locationSubscription;
+  double latitude = 12.9716;
+  double longitude = 77.5946;
+  Map<String, double> currentLocation;
+  StreamSubscription<Map<String, double>> locationSubscription;
   Location location = new Location();
+
   @override
   void initState() {
     super.initState();
@@ -30,6 +35,7 @@ double longitude;
 //        location.onLocationChanged();
     getMyLocationData();
   }
+
   void getMyLocationData() async {
     var currentLocation = LocationData;
 
@@ -50,11 +56,24 @@ double longitude;
           "Latitude : ${currentLocation.latitude}\nLongitude : ${currentLocation.longitude}");
       longitude = currentLocation.longitude;
       latitude = currentLocation.latitude;
+      Map data = {
+        "timestamp": "${DateTime.now()}",
+        "latitude": "$latitude",
+        "longitude": "$longitude"
+      };
+      database
+          .reference()
+          .child("locations/" + 'uid')
+          .set(data)
+          .catchError((e) {
+        print(e);
+      });
       setState(() {
         print('Latitude $latitude\nLongitude $longitude');
       });
     });
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -71,26 +90,55 @@ double longitude;
                 myLocationEnabled: true,
                 mapType: MapType.normal,
                 initialCameraPosition: CameraPosition(
-                  target: LatLng(12.311212399999999, 76.61367419999999),
+                  target: LatLng(latitude, longitude),
                   zoom: 10,
                 ),
-                markers: Set.of((marker != null) ? [marker] : []),
-                circles: Set.of((circle != null) ? [circle] : []),
+//                markers: Set.of((marker != null) ? [marker] : []),
+//                circles: Set.of((circle != null) ? [circle] : []),
                 onMapCreated: (GoogleMapController controller) {
                   _controller = controller;
                 },
               ),
             ),
           ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              RaisedButton(
+                textColor: Colors.white,
+                color: Colors.green,
+                onPressed: () {
+                  Map data = {"name": "${DateTime.now()}"};
+//                  database
+//                      .reference()
+//                      .child("complaints/")
+//                      .set(data)
+//                      .catchError((e) {
+//                    print('ERROR ho gya $e\n\n');
+//                  });
+                  database
+                      .reference()
+                      .child("locations/" + 'uid')
+                      .set(data)
+                      .catchError((e) {
+                    print(e);
+                  });
+                },
+                child: Text('Share my Location'),
+              ),
+              RaisedButton(
+                textColor: Colors.white,
+                color: Colors.red,
+                onPressed: () {},
+                child: Text('Stop Sharing'),
+              ),
+            ],
+          )
         ],
       ),
     );
   }
-}
-
-void initPlatformState() {
-
-
 }
 
 //

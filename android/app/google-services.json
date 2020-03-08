@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "129534619816",
+    "firebase_url": "https://beacon-2211d.firebaseio.com",
+    "project_id": "beacon-2211d",
+    "storage_bucket": "beacon-2211d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:129534619816:android:13921333d15bf6695bd29d",
+        "android_client_info": {
+          "package_name": "com.example.beacon_flutter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "129534619816-o36551gl7js7bgqaostrjn01h6vv9l5b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCrG-oCVEMlV0cH-xwB8ivjOmbAHe9YQAc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "129534619816-o36551gl7js7bgqaostrjn01h6vv9l5b.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
