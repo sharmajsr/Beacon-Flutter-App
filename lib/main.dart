@@ -1,5 +1,4 @@
-import 'package:beacon_flutter/ui/UsersPage.dart';
-import 'package:beacon_flutter/ui/dashboard.dart';
+import 'package:beacon_flutter/ui/Login.dart';
 import 'package:flutter/material.dart';
 
 void main() => runApp(MyApp());
@@ -14,7 +13,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: Users(),
+      home: Login(),
     );
   }
 }

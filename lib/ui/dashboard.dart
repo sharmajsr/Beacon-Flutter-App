@@ -22,7 +22,7 @@ class _DashboardState extends State<Dashboard> {
   double latitude = 12.9716;
   double longitude = 77.5946;
   Map<String, double> currentLocation;
-  StreamSubscription<Map<String, double>> locationSubscription;
+  StreamSubscription<LocationData> locationSubscription;
   Location location = new Location();
 
   @override
@@ -33,7 +33,7 @@ class _DashboardState extends State<Dashboard> {
 //    initPlatformState();
 //    locationSubscription =
 //        location.onLocationChanged();
-    getMyLocationData();
+   // getMyLocationData();
   }
 
   void getMyLocationData() async {
@@ -51,9 +51,8 @@ class _DashboardState extends State<Dashboard> {
       }
       currentLocation = null;
     }
-    location.onLocationChanged().listen((LocationData currentLocation) {
-      print(
-          "Latitude : ${currentLocation.latitude}\nLongitude : ${currentLocation.longitude}");
+    locationSubscription=location.onLocationChanged().listen((LocationData currentLocation) {
+      print("Latitude : ${currentLocation.latitude} \n Longitude : ${currentLocation.longitude}");
       longitude = currentLocation.longitude;
       latitude = currentLocation.latitude;
       Map data = {
@@ -109,7 +108,7 @@ class _DashboardState extends State<Dashboard> {
                 textColor: Colors.white,
                 color: Colors.green,
                 onPressed: () {
-                  Map data = {"name": "${DateTime.now()}"};
+                  getMyLocationData();
 //                  database
 //                      .reference()
 //                      .child("complaints/")
@@ -117,20 +116,18 @@ class _DashboardState extends State<Dashboard> {
 //                      .catchError((e) {
 //                    print('ERROR ho gya $e\n\n');
 //                  });
-                  database
-                      .reference()
-                      .child("locations/" + 'uid')
-                      .set(data)
-                      .catchError((e) {
-                    print(e);
-                  });
+
                 },
                 child: Text('Share my Location'),
               ),
               RaisedButton(
                 textColor: Colors.white,
                 color: Colors.red,
-                onPressed: () {},
+                onPressed: () {
+                  print('Location Subscription Cancelled');
+                  locationSubscription.cancel();
+
+                },
                 child: Text('Stop Sharing'),
               ),
             ],

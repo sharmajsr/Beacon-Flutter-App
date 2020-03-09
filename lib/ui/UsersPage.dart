@@ -12,7 +12,7 @@ class _UsersState extends State<Users> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('List the Users here'),
+        title: Text('Beacons'),
       ),
       body: Column(
         children: <Widget>[
