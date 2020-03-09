@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:beacon_flutter/model/Constants.dart';
 import 'package:beacon_flutter/ui/SignUp.dart';
+import 'package:beacon_flutter/ui/UsersPage.dart';
 import 'package:beacon_flutter/ui/dashboard.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -214,34 +215,34 @@ class _LoginState extends State<Login> {
           .user;
       print(user.uid);
 
-      var d = await Firestore.instance
-          .collection('users')
-          .document(emailController.text)
-          .get()
-          .then((DocumentSnapshot) async {
-        name = DocumentSnapshot.data['name'];
-        email = DocumentSnapshot.data['email'];
-        pincode = DocumentSnapshot.data['pincode'];
-        mobile = DocumentSnapshot.data['mobile'];
-        role = DocumentSnapshot.data['role'];
-//        room = DocumentSnapshot.data['room'];
+//      var d = await Firestore.instance
+//          .collection('users')
+//          .document(emailController.text)
+//          .get()
+//          .then((DocumentSnapshot) async {
+//        name = DocumentSnapshot.data['name'];
+//        email = DocumentSnapshot.data['email'];
+//        pincode = DocumentSnapshot.data['pincode'];
 //        mobile = DocumentSnapshot.data['mobile'];
-        print("name : $name");
-        final prefs = await SharedPreferences.getInstance();
-
-        prefs.setString(Constants.loggedInUserRole, role);
-//        prefs.setString(Constants.loggedInUserBlock, block);
-        prefs.setString(Constants.loggedInUserPinCode, pincode);
-        prefs.setString(Constants.loggedInUserMobile, mobile);
-        prefs.setString(Constants.loggedInUserName, name);
-        prefs.setString(Constants.isLoggedIn, 'true');
-        print("Constants name : ${Constants.loggedInUserMobile}");
-        print(DocumentSnapshot.data.toString());
-      });
+//        role = DocumentSnapshot.data['role'];
+////        room = DocumentSnapshot.data['room'];
+////        mobile = DocumentSnapshot.data['mobile'];
+//        print("name : $name");
+//        final prefs = await SharedPreferences.getInstance();
+//
+//        prefs.setString(Constants.loggedInUserRole, role);
+////        prefs.setString(Constants.loggedInUserBlock, block);
+//        prefs.setString(Constants.loggedInUserPinCode, pincode);
+//        prefs.setString(Constants.loggedInUserMobile, mobile);
+//        prefs.setString(Constants.loggedInUserName, name);
+//        prefs.setString(Constants.isLoggedIn, 'true');
+//        print("Constants name : ${Constants.loggedInUserMobile}");
+//        print(DocumentSnapshot.data.toString());
+//      });
       _saving=false;
 
         Navigator.push(
-            context, MaterialPageRoute(builder: (context) =>Dashboard(),));
+            context, MaterialPageRoute(builder: (context) =>Users(emailController.text),));
 
     } catch (e) {
       print(e.message);

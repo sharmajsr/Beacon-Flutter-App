@@ -54,6 +54,7 @@ class _SignUpState extends State<SignUp> {
           "name": "${nameController.text}",
           "password": "${passwordController.text}",
           "email": "${emailController.text}",
+          "location":"off"
         };
 //        Firestore.instance
 //            .collection("users")
