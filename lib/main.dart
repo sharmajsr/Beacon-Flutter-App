@@ -1,4 +1,5 @@
 import 'package:beacon_flutter/ui/Login.dart';
+import 'package:beacon_flutter/ui/ShareLocation.dart';
 import 'package:flutter/material.dart';
 
 void main() => runApp(MyApp());

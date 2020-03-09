@@ -1,47 +1,56 @@
 import 'dart:async';
-import 'dart:typed_data';
+import 'package:beacon_flutter/ui/LocationTracker.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/rendering.dart';
 import 'package:location/location.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart';
+import 'package:random_string/random_string.dart';
 
-class Dashboard extends StatefulWidget {
+class ShareLocation extends StatefulWidget {
+  final String uid;
+
+  ShareLocation(this.uid);
+
   @override
-  _DashboardState createState() => _DashboardState();
+  _ShareLocationState createState() => _ShareLocationState();
 }
 
 final FirebaseDatabase database = FirebaseDatabase.instance;
 
-class _DashboardState extends State<Dashboard> {
+class _ShareLocationState extends State<ShareLocation> {
+  final datab = FirebaseDatabase.instance;
+  String generatedCode = '';
+  bool showPassKey=false;
   GoogleMapController _controller;
   Marker marker;
   Circle circle;
+  Map updateData;
   double latitude = 12.9716;
   double longitude = 77.5946;
   Map<String, double> currentLocation;
   StreamSubscription<LocationData> locationSubscription;
   Location location = new Location();
+  Map myData;
 
   @override
   void initState() {
     super.initState();
-//    currentLocation['latitude'] = 12.311212399999999;
-//    currentLocation['longitude'] = 76.61367419999999;
-//    initPlatformState();
-//    locationSubscription =
-//        location.onLocationChanged();
-   // getMyLocationData();
+    getMyData();
+  }
+
+  Future<String> getMyData() async {
+    myData = (await FirebaseDatabase.instance
+            .reference()
+            .child("users/" + widget.uid)
+            .once())
+        .value;
   }
 
   void getMyLocationData() async {
     var currentLocation = LocationData;
-
     var location = new Location();
-
-// Platform messages may fail, so we use a try/catch PlatformException.
     try {
       var location = new Location();
       var currentLocation = await location.getLocation();
@@ -51,8 +60,10 @@ class _DashboardState extends State<Dashboard> {
       }
       currentLocation = null;
     }
-    locationSubscription=location.onLocationChanged().listen((LocationData currentLocation) {
-      print("Latitude : ${currentLocation.latitude} \n Longitude : ${currentLocation.longitude}");
+    locationSubscription =
+        location.onLocationChanged().listen((LocationData currentLocation) {
+      print(
+          "Latitude : ${currentLocation.latitude} \n Longitude : ${currentLocation.longitude}");
       longitude = currentLocation.longitude;
       latitude = currentLocation.latitude;
       Map data = {
@@ -62,7 +73,7 @@ class _DashboardState extends State<Dashboard> {
       };
       database
           .reference()
-          .child("locations/" + 'uid')
+          .child("locations/" + widget.uid)
           .set(data)
           .catchError((e) {
         print(e);
@@ -109,14 +120,23 @@ class _DashboardState extends State<Dashboard> {
                 color: Colors.green,
                 onPressed: () {
                   getMyLocationData();
-//                  database
-//                      .reference()
-//                      .child("complaints/")
-//                      .set(data)
-//                      .catchError((e) {
-//                    print('ERROR ho gya $e\n\n');
-//                  });
-
+                  showPassKey=true;
+                  generatedCode = randomNumeric(4);
+                  updateData = {
+                    "name": "${myData['name']}",
+                    "email": "${myData['email']}",
+                    "location": "on",
+                    "uid": "${myData['uid']}",
+                    "passkey": "$generatedCode",
+                    "location": "on"
+                  };
+                  datab
+                      .reference()
+                      .child('users/' + widget.uid)
+                      .set(updateData)
+                      .catchError((e) {
+                    print('Error at Storing value ' + e + '\n\n');
+                  });
                 },
                 child: Text('Share my Location'),
               ),
@@ -124,14 +144,32 @@ class _DashboardState extends State<Dashboard> {
                 textColor: Colors.white,
                 color: Colors.red,
                 onPressed: () {
-                  print('Location Subscription Cancelled');
-                  locationSubscription.cancel();
+                  locationSubscription.pause();
+                  showPassKey=false;
+                  print('Location Subscription Paused');
 
+                  generatedCode = randomNumeric(4);
+                  updateData = {
+                    "name": "${myData['name']}",
+                    "email": "${myData['email']}",
+                    "location": "on",
+                    "uid": "${myData['uid']}",
+                    "passkey": "$generatedCode",
+                    "location": "off"
+                  };
+                  datab
+                      .reference()
+                      .child('users/' + widget.uid)
+                      .set(updateData)
+                      .catchError((e) {
+                    print('Error at Storing value ' + e + '\n\n');
+                  });
                 },
                 child: Text('Stop Sharing'),
               ),
             ],
-          )
+          ),
+          showPassKey==true ? Text('PassKey :  $generatedCode') : Container(),
         ],
       ),
     );

@@ -6,12 +6,16 @@ import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 
-class LiveLocation extends StatefulWidget {
+class LocationTracker extends StatefulWidget {
+  final String uid;
+
+  LocationTracker(this.uid);
+
   @override
-  _LiveLocationState createState() => _LiveLocationState();
+  _LocationTrackerState createState() => _LocationTrackerState();
 }
 
-class _LiveLocationState extends State<LiveLocation> {
+class _LocationTrackerState extends State<LocationTracker> {
   StreamSubscription _locationSubscription;
   Location _locationTracker = Location();
   Marker marker;
@@ -26,23 +30,24 @@ class _LiveLocationState extends State<LiveLocation> {
     zoom: 14.4746,
   );
 
-//  Future<Uint8List> getMarker() async {
-//    ByteData byteData = await DefaultAssetBundle.of(context).load("assets/car_icon.png");
-//    return byteData.buffer.asUint8List();
-//  }
+  @override
+  void initState() {
+    super.initState();
+    getCurrentLocation();
+  }
 
   void updateMarkerAndCircle(double newLatitude, double newLongitude) {
     LatLng latlng = LatLng(newLatitude, newLongitude);
     //  LatLng latlng = LatLng(12.335642, 76.619103);
-    latitude=newLatitude;
-    longitude=newLongitude;
+    latitude = newLatitude;
+    longitude = newLongitude;
     this.setState(() {
       marker = Marker(
         markerId: MarkerId("home"),
         position: latlng,
-         rotation: 180,
+        //  rotation: 180,
         draggable: true,
-       // zIndex: 2,
+        // zIndex: 2,
         flat: true,
         anchor: Offset(0.5, 0.5),
         //icon: BitmapDescriptor.fromBytes(imageData)
@@ -63,14 +68,14 @@ class _LiveLocationState extends State<LiveLocation> {
       //Uint8List imageData = await getMarker();
       var location = await _locationTracker.getLocation();
       print("Location Check" + '${location}');
-       updateMarkerAndCircle(location.latitude,location.longitude);
+      updateMarkerAndCircle(location.latitude, location.longitude);
 
       if (_locationSubscription != null) {
         _locationSubscription.cancel();
       }
 
       _locationSubscription =
-          _firebaseRef.child('locations/' + 'uid').onValue.listen((event) {
+          _firebaseRef.child('locations/' + widget.uid).onValue.listen((event) {
         if (_controller != null) {
           if (event != null) {
             Map locationData = event.snapshot.value;
@@ -79,7 +84,7 @@ class _LiveLocationState extends State<LiveLocation> {
             print('Location Data' + '${locationData}' + '\n');
             _controller.animateCamera(CameraUpdate.newCameraPosition(
                 new CameraPosition(
-                    bearing: 192.8334901395799,
+                //    bearing: 192.8334901395799,
                     target: LatLng(latitude, longitude),
                     tilt: 0,
                     zoom: 13.00)));

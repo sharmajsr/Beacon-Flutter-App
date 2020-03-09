@@ -52,9 +52,11 @@ class _SignUpState extends State<SignUp> {
         FirebaseUser user = result.user;
         data = {
           "name": "${nameController.text}",
-          "password": "${passwordController.text}",
           "email": "${emailController.text}",
-          "location":"off"
+          "location": "off",
+          "uid": "${user.uid}",
+          "passkey": "123",
+          "location": "off"
         };
 //        Firestore.instance
 //            .collection("users")
@@ -69,15 +71,15 @@ class _SignUpState extends State<SignUp> {
             .child('users/' + result.user.uid)
             .set(data)
             .catchError((e) {
-          print('Error at Storing value '+e+'\n\n');
+          print('Error at Storing value ' + e + '\n\n');
         });
 
         print(user);
 
         user.sendEmailVerification();
-        // _saving = false;
-        Navigator.push(
-            context, MaterialPageRoute(builder: (context) => Login()));
+        _saving = false;
+//        Navigator.push(
+//            context, MaterialPageRoute(builder: (context) => Login()));
       } catch (e) {
         _saving = false;
         setState(() {});
@@ -247,8 +249,7 @@ class _SignUpState extends State<SignUp> {
 
                             if (!(validateName &&
                                 validatePassword &&
-                                validateEmail
-                                )) {
+                                validateEmail)) {
                               _saving = true;
                               signUp();
                             }

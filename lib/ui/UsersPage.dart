@@ -1,11 +1,11 @@
-import 'package:beacon_flutter/ui/LiveLocation.dart';
-import 'package:beacon_flutter/ui/dashboard.dart';
+import 'package:beacon_flutter/ui/LocationTracker.dart';
+import 'package:beacon_flutter/ui/ShareLocation.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/material.dart';
 
 class Users extends StatefulWidget {
-  String uid;
+  final String uid;
 
   Users(this.uid);
 
@@ -17,11 +17,23 @@ class _UsersState extends State<Users> {
   final datab = FirebaseDatabase.instance;
   Map data;
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Beacons'),
+        actions: <Widget>[
+          GestureDetector(
+            child: Icon(Icons.map),
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => ShareLocation(widget.uid,)));
+            },
+          )
+        ],
       ),
       body: firebaseList(),
 //      Column(
@@ -57,7 +69,8 @@ class _UsersState extends State<Users> {
   Widget contactCard(Map data, String status) {
     return InkWell(
       onTap: () {
-        _asyncInputDialog(context);
+        print('Data Passkey '+data['passkey']+'\n\n');
+        _asyncInputDialog(context, data);
       },
       child: ListTile(
         trailing: CircleAvatar(
@@ -103,7 +116,7 @@ class _UsersState extends State<Users> {
   }
 }
 
-Future<String> _asyncInputDialog(BuildContext context) async {
+Future<String> _asyncInputDialog(BuildContext context, Map data) async {
   String passKey = '';
   bool validateKey = false;
 
@@ -114,7 +127,7 @@ Future<String> _asyncInputDialog(BuildContext context) async {
       return StatefulBuilder(
         builder: (context, setState) {
           return AlertDialog(
-            title: Text('PassKey DialogBox'),
+            title: Text('PassKey for ${data['name']}'),
             content: new Row(
               children: <Widget>[
                 new Expanded(
@@ -135,8 +148,14 @@ Future<String> _asyncInputDialog(BuildContext context) async {
               FlatButton(
                 child: Text('Ok'),
                 onPressed: () {
-                  if (passKey == "123") {
+                  print('PassKey from Database ${data['passkey']}');
+                  if (passKey == data['passkey']) {
                     Navigator.of(context).pop(passKey);
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                LocationTracker(data['uid'])));
                   } else {
                     validateKey = true;
                     setState(() {});

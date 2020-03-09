@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:beacon_flutter/model/Constants.dart';
 import 'package:beacon_flutter/ui/SignUp.dart';
 import 'package:beacon_flutter/ui/UsersPage.dart';
-import 'package:beacon_flutter/ui/dashboard.dart';
+import 'package:beacon_flutter/ui/ShareLocation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -242,7 +242,7 @@ class _LoginState extends State<Login> {
       _saving=false;
 
         Navigator.push(
-            context, MaterialPageRoute(builder: (context) =>Users(emailController.text),));
+            context, MaterialPageRoute(builder: (context) =>Users(user.uid),));
 
     } catch (e) {
       print(e.message);
