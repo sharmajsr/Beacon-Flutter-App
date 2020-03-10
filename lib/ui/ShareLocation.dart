@@ -22,7 +22,7 @@ final FirebaseDatabase database = FirebaseDatabase.instance;
 class _ShareLocationState extends State<ShareLocation> {
   final datab = FirebaseDatabase.instance;
   String generatedCode = '';
-  bool showPassKey=false;
+  bool showPassKey = false;
   GoogleMapController _controller;
   Marker marker;
   Circle circle;
@@ -89,6 +89,13 @@ class _ShareLocationState extends State<ShareLocation> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Beacon'),
+        leading: GestureDetector(
+          child: Icon(Icons.keyboard_backspace),
+          onTap: () {
+            //locationSubscription.pause();
+            Navigator.pop(context);
+          },
+        ),
       ),
       body: Column(
         children: <Widget>[
@@ -120,8 +127,8 @@ class _ShareLocationState extends State<ShareLocation> {
                 color: Colors.green,
                 onPressed: () {
                   getMyLocationData();
-                  showPassKey=true;
-                  generatedCode = randomNumeric(4);
+                  showPassKey = true;
+                  generatedCode = randomAlphaNumeric(10);
                   updateData = {
                     "name": "${myData['name']}",
                     "email": "${myData['email']}",
@@ -145,10 +152,10 @@ class _ShareLocationState extends State<ShareLocation> {
                 color: Colors.red,
                 onPressed: () {
                   locationSubscription.pause();
-                  showPassKey=false;
+                  showPassKey = false;
                   print('Location Subscription Paused');
 
-                  generatedCode = randomNumeric(4);
+                  generatedCode = randomAlphaNumeric(10);
                   updateData = {
                     "name": "${myData['name']}",
                     "email": "${myData['email']}",
@@ -169,7 +176,7 @@ class _ShareLocationState extends State<ShareLocation> {
               ),
             ],
           ),
-          showPassKey==true ? Text('PassKey :  $generatedCode') : Container(),
+          showPassKey == true ? Text('PassKey :  $generatedCode') : Container(),
         ],
       ),
     );
