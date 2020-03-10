@@ -1,4 +1,5 @@
 import 'package:beacon_flutter/ui/LocationTracker.dart';
+import 'package:beacon_flutter/ui/PassKeys.dart';
 import 'package:beacon_flutter/ui/ShareLocation.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
@@ -17,7 +18,6 @@ class _UsersState extends State<Users> {
   final datab = FirebaseDatabase.instance;
   Map data;
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,46 +30,35 @@ class _UsersState extends State<Users> {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => ShareLocation(widget.uid,)));
+                      builder: (context) => ShareLocation(
+                            widget.uid,
+                          )));
             },
           )
         ],
       ),
       body: firebaseList(),
-//      Column(
-//        children: <Widget>[
-//          Row(
-//            children: <Widget>[
-//              RaisedButton(
-//                onPressed: () {
-//                  Navigator.push(
-//                    context,
-//                    MaterialPageRoute(builder: (context) => Dashboard()),
-//                  );
-//                },
-//                child: Text('My Location'),
-//              ),
-//              RaisedButton(
-//                onPressed: () {
-//                  Navigator.push(
-//                    context,
-//                    MaterialPageRoute(builder: (context) => LiveLocation()),
-//                  );
-//                },
-//                child: Text('Track Location'),
-//              ),
-//            ],
-//          ),
-//          firebaseList(),
-//        ],
-//      ),
+      floatingActionButton: FloatingActionButton(
+        child: RotatedBox(
+
+          child: Icon(Icons.vpn_key),
+          quarterTurns: 1,
+        ),
+        onPressed: () {
+
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => PassKeys()));
+        },
+      ),
     );
   }
 
   Widget contactCard(Map data, String status) {
     return InkWell(
       onTap: () {
-        print('Data Passkey '+data['passkey']+'\n\n');
+        print('Data Passkey ' + data['passkey'] + '\n\n');
         _asyncInputDialog(context, data);
       },
       child: ListTile(
