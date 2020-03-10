@@ -4,6 +4,8 @@ import 'package:beacon_flutter/ui/ShareLocation.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:location/location.dart';
 
 class Users extends StatefulWidget {
   final String uid;
@@ -17,6 +19,26 @@ class Users extends StatefulWidget {
 class _UsersState extends State<Users> {
   final datab = FirebaseDatabase.instance;
   Map data;
+  LocationData currentLocation;
+  @override
+  void initState() {
+    super.initState();
+
+    getMyLcoation();
+  }
+
+  void getMyLcoation() async {
+    var location = new Location();
+    try {
+      var location = new Location();
+       currentLocation = await location.getLocation();
+
+    } on PlatformException catch (e) {
+      if (e.code == 'PERMISSION_DENIED') {
+        // error = 'Permission denied';
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +53,7 @@ class _UsersState extends State<Users> {
                   context,
                   MaterialPageRoute(
                       builder: (context) => ShareLocation(
-                            widget.uid,
+                            widget.uid,currentLocation.latitude,currentLocation.longitude
                           )));
             },
           )
@@ -40,16 +62,12 @@ class _UsersState extends State<Users> {
       body: firebaseList(),
       floatingActionButton: FloatingActionButton(
         child: RotatedBox(
-
           child: Icon(Icons.vpn_key),
           quarterTurns: 1,
         ),
         onPressed: () {
-
           Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => PassKeys()));
+              context, MaterialPageRoute(builder: (context) => PassKeys()));
         },
       ),
     );
@@ -59,7 +77,8 @@ class _UsersState extends State<Users> {
     return InkWell(
       onTap: () {
         print('Data Passkey ' + data['passkey'] + '\n\n');
-        _asyncInputDialog(context, data);
+        if (data['location'] == 'on') _asyncInputDialog(context, data);
+        setState(() {});
       },
       child: ListTile(
         trailing: CircleAvatar(

@@ -82,9 +82,9 @@ class _LocationTrackerState extends State<LocationTracker> {
             latitude = double.parse(locationData['latitude']);
             longitude = double.parse(locationData['longitude']);
             print('Location Data' + '${locationData}' + '\n');
-            _controller.animateCamera(CameraUpdate.newCameraPosition(
-                new CameraPosition(
-                //    bearing: 192.8334901395799,
+            _controller.animateCamera(
+                CameraUpdate.newCameraPosition(new CameraPosition(
+                    //    bearing: 192.8334901395799,
                     target: LatLng(latitude, longitude),
                     tilt: 0,
                     zoom: 13.00)));
@@ -123,11 +123,6 @@ class _LocationTrackerState extends State<LocationTracker> {
           _controller = controller;
         },
       ),
-      floatingActionButton: FloatingActionButton(
-          child: Icon(Icons.location_searching),
-          onPressed: () {
-            getCurrentLocation();
-          }),
     );
   }
 }
