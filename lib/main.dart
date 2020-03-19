@@ -1,3 +1,4 @@
+import 'package:beacon_flutter/ui/Dashboard.dart';
 import 'package:beacon_flutter/ui/Login.dart';
 import 'package:flutter/material.dart';
 
@@ -11,9 +12,10 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primaryColor: Color(0xff1A1B41),
+        //primarySwatch: Colors.blue,
       ),
-      home: Login(),
+      home: Dashboard(),
     );
   }
 }

@@ -44,32 +44,35 @@ class _UsersState extends State<Users> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text('Beacons'),
         actions: <Widget>[
-          GestureDetector(
-            child: Icon(Icons.map),
-            onTap: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => ShareLocation(
-                            widget.uid,currentLocation.latitude,currentLocation.longitude
-                          )));
-            },
+          Padding(
+            padding: const EdgeInsets.only(right:15.0),
+            child: GestureDetector(
+              child: Icon(Icons.map),
+              onTap: () {
+//                Navigator.push(
+//                    context,MaterialPageRoute(
+//                        builder: (context) => ShareLocation(
+//                              widget.uid,currentLocation.latitude,currentLocation.longitude
+//                            )));
+              },
+            ),
           )
         ],
       ),
       body: firebaseList(),
-      floatingActionButton: FloatingActionButton(
-        child: RotatedBox(
-          child: Icon(Icons.vpn_key),
-          quarterTurns: 1,
-        ),
-        onPressed: () {
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => PassKeys()));
-        },
-      ),
+//      floatingActionButton: FloatingActionButton(
+//        child: RotatedBox(
+//          child: Icon(Icons.vpn_key),
+//          quarterTurns: 1,
+//        ),
+//        onPressed: () {
+//          Navigator.push(
+//              context, MaterialPageRoute(builder: (context) => PassKeys()));
+//        },
+//      ),
     );
   }
 

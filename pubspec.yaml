@@ -34,6 +34,8 @@ dependencies:
   flutter_screenutil: ^0.4.2
   cloud_firestore: ^0.13.4+1
   random_string: ^2.0.1
+  flutter_time_picker_spinner: ^1.0.6
+  share: ^0.6.3+6
 
 dev_dependencies:
   flutter_test:

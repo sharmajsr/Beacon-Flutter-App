@@ -58,14 +58,7 @@ class _SignUpState extends State<SignUp> {
           "passkey": "123",
           "location": "off"
         };
-//        Firestore.instance
-//            .collection("users")
-//            .document((emailController.text))
-//            .setData({
-//          "name": "${nameController.text}",
-//          "password": "${passwordController.text}",
-//          "email": "${emailController.text}"
-//        });
+
         datab
             .reference()
             .child('users/' + result.user.uid)
@@ -78,8 +71,8 @@ class _SignUpState extends State<SignUp> {
 
         user.sendEmailVerification();
         _saving = false;
-//        Navigator.push(
-//            context, MaterialPageRoute(builder: (context) => Login()));
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => Login()));
       } catch (e) {
         _saving = false;
         setState(() {});
