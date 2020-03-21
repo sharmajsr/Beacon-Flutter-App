@@ -1,3 +1,4 @@
+import 'package:beacon_flutter/ui/LocationTracker.dart';
 import 'package:beacon_flutter/ui/ShareLocation.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -5,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
 import 'package:location/location.dart';
 import 'package:random_string/random_string.dart';
+import 'package:modal_progress_hud/modal_progress_hud.dart';
 
 class Dashboard extends StatefulWidget {
   @override
@@ -19,13 +21,25 @@ class _DashboardState extends State<Dashboard> {
   DateTime expiringAt;
   LocationData currentLocation;
   String uid;
-  TextEditingController nameController=TextEditingController();
-  List<String> timeDuration = ['15 minutes', '30 minutes' , '1 hour', '3 hour']; // Option 2
-  String selectedTime; //
+  TextEditingController nameController = TextEditingController();
+  TextEditingController passkeyController = TextEditingController();
+  List<String> timeDuration = [
+    '15 minutes',
+    '30 minutes',
+    '1 hour',
+    '3 hour'
+  ]; // Option 2
+  String selectedTime;
+  String passKey = '';
+  bool validateKey = false, validateName = false;
+  bool isVerifying = false;
+  DataSnapshot snapshot;
+  DataSnapshot snapshotNames;
+
   @override
   void initState() {
     super.initState();
-
+    getData();
     getMyLcoation();
   }
 
@@ -51,13 +65,15 @@ class _DashboardState extends State<Dashboard> {
         children: <Widget>[
           RaisedButton(
             onPressed: () {
-              choiceDialog(context);
+              createBeaconDialog(context);
             },
             child: Text('Create Beacon'),
           ),
           RaisedButton(
             onPressed: () {
               // _asyncInputDialog(context)
+//                getData();
+              followBeaconDialog(context);
             },
             child: Text('Follow A Beacon'),
           ),
@@ -66,10 +82,7 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  Future<String> choiceDialog(BuildContext context) async {
-    String passKey = '';
-    bool validateKey = false;
-
+  Future<String> createBeaconDialog(BuildContext context) async {
     return showDialog<String>(
       context: context,
       // barrierDismissible: false, // dialog is dismissible with a tap on the barrier
@@ -92,9 +105,9 @@ class _DashboardState extends State<Dashboard> {
                       decoration: InputDecoration(
                         labelText: 'Enter your Name',
                         errorText:
-                            validateKey ? "Please enter your name" : null,
+                            validateName ? "Please enter your name" : null,
                       ),
-                     controller: nameController,
+                      controller: nameController,
                     ),
                   ),
                   Container(
@@ -111,9 +124,10 @@ class _DashboardState extends State<Dashboard> {
                     height: 10,
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal:24.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
                     child: DropdownButton(
-                      hint: Text('Please choose a Time'), // Not necessary for Option 1
+                      hint: Text('Please choose a Time'),
+                      // Not necessary for Option 1
                       value: selectedTime,
                       onChanged: (newValue) {
                         setState(() {
@@ -128,73 +142,201 @@ class _DashboardState extends State<Dashboard> {
                       }).toList(),
                     ),
                   ),
-//                  Flexible(
-//                    flex: 3,
-//                    child: TimePickerSpinner(
-//                      is24HourMode: false,
-//                      normalTextStyle:
-//                          TextStyle(fontSize: 24, color: Colors.black12),
-//                      highlightedTextStyle:
-//                          TextStyle(fontSize: 24, color: Colors.black),
-//                      spacing: 30,
-//                      itemHeight: 60,
-//                      isForce2Digits: true,
-//                      onTimeChange: (time) {
-//                        setState(() {
-//                          _dateTime = time;
-//                        });
-//                      },
-//                    ),
-//                  ),
                   SizedBox(
                     height: 20,
                   ),
                   InkWell(
                     onTap: () {
-
-                       code=randomAlphaNumeric(10);
-                       if( selectedTime=='15 minutes')
-                        expiringAt=DateTime.now().add(Duration(minutes:15));
-                       else if( selectedTime=='30 minutes')
-                         expiringAt=DateTime.now().add(Duration(minutes:30));
-                       else if( selectedTime=='1 hour')
-                         expiringAt=DateTime.now().add(Duration(hours:1));
-                       else
-                         expiringAt=DateTime.now().add(Duration(hours:3));
-                        data={
-                         'name':'${nameController.text}',
-                          'latitude':'${currentLocation.latitude}',
-                          'longitude':'${currentLocation.longitude}',
-                          'startAt':'${DateTime.now()}',
-                          'expiringAt':'$expiringAt'
-                       };
-                        print(data);
+                      isVerifying = true;
+                      code = randomAlphaNumeric(4);
+                      if (selectedTime == '15 minutes')
+                        expiringAt = DateTime.now().add(Duration(minutes: 15));
+                      else if (selectedTime == '30 minutes')
+                        expiringAt = DateTime.now().add(Duration(minutes: 30));
+                      else if (selectedTime == '1 hour')
+                        expiringAt = DateTime.now().add(Duration(hours: 1));
+                      else
+                        expiringAt = DateTime.now().add(Duration(hours: 3));
+                      data = {
+                        'name': '${nameController.text}',
+                        'latitude': '${currentLocation.latitude}',
+                        'longitude': '${currentLocation.longitude}',
+                        'startAt': '${DateTime.now()}',
+                        'expiringAt': '$expiringAt'
+                      };
+                      databaseInstance
+                          .reference()
+                          .child('groups/' + code)
+                          .push()
+                          .set("${nameController.text}")
+                          .catchError((e) {
+                        print('Error at Storing Names ' + e + '\n\n');
+                      });
+                      print(data);
                       databaseInstance
                           .reference()
                           .child('locations/' + code)
                           .set(data)
                           .catchError((e) {
-                        print('Error at Storing value ' + e + '\n\n');
+                        print('Error at Storing Location Data ' + e + '\n\n');
                       });
+
+                      isVerifying = false;
                       Navigator.push(
                           context,
                           MaterialPageRoute(
                               builder: (context) => ShareLocation(
                                   code,
                                   currentLocation.latitude,
-                                  currentLocation.longitude,DateTime.now(),expiringAt)));
+                                  currentLocation.longitude,
+                                  DateTime.now(),
+                                  expiringAt)));
                     },
                     child: Container(
                       width: double.infinity,
                       padding: EdgeInsets.only(top: 20.0, bottom: 20.0),
                       decoration: BoxDecoration(
-                        color: Colors.red,
+                        color: Color(0xff6290c3),
                         borderRadius: BorderRadius.only(
                             bottomLeft: Radius.circular(32.0),
                             bottomRight: Radius.circular(32.0)),
                       ),
                       child: Text(
                         "Create a Beacon",
+                        style: TextStyle(color: Colors.white),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> getData() async {
+    snapshot = await databaseInstance.reference().child("locations/").once();
+    print(snapshot.value);
+  }
+
+  Future<void> getNames(String gid) async {
+    snapshotNames =
+        await databaseInstance.reference().child("groups/" + gid).once();
+    print(snapshotNames.value);
+  }
+
+  Future<String> followBeaconDialog(BuildContext context) async {
+    return showDialog<String>(
+      context: context,
+      // barrierDismissible: false, // dialog is dismissible with a tap on the barrier
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(32.0))),
+              contentPadding: EdgeInsets.only(top: 20.0),
+              //  title: Text('PassKey for ${data['name']}'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                    child: Text('Enter Name'),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                    child: TextField(
+                      autofocus: true,
+                      decoration: InputDecoration(
+                        // labelText: 'Enter your Name',
+                        errorText:
+                            validateName ? "Please try with other name" : null,
+                      ),
+                      controller: nameController,
+                    ),
+                  ),
+                  Container(
+                    height: 30,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                    child: Text('Enter PassKey'),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                        left: 25.0, right: 25, bottom: 20),
+                    child: TextField(
+                      autofocus: true,
+                      decoration: InputDecoration(
+                        // labelText: 'Enter PassKey here',
+                        hintText: 'e.g 12EG45AS',
+                        errorText:
+                            validateKey ? "Please enter correct PassKey" : null,
+                      ),
+                      controller: passkeyController,
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () async {
+                      isVerifying = true;
+                      await getData();
+
+                      Map data = snapshot.value;
+
+                      if (data.containsKey(passkeyController.text)) {
+                        validateKey = false;
+
+                        print(data[passkeyController.text]);
+                        getNames(passkeyController.text);
+                        Map names = snapshotNames.value;
+
+                        if (nameController.text.isEmpty ||
+                            names.containsValue(nameController.text)) {
+                          validateName = true;
+                          setState(() {});
+                        } else {
+                          setState(() {
+                            databaseInstance
+                                .reference()
+                                .child('groups/' + passkeyController.text)
+                                .push()
+                                .set("${nameController.text}")
+                                .catchError((e) {
+                              print('Error at Storing Names ' + e + '\n\n');
+                            });
+                            validateName = false;
+                          });
+                        }
+                        if (!validateKey && !validateName)
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      LocationTracker(passkeyController.text)));
+                      } else {
+                        setState(() {
+                          validateName = false;
+                          validateKey = true;
+                        });
+                        print("Incorrect Key");
+                      }
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.only(top: 20.0, bottom: 20.0),
+                      decoration: BoxDecoration(
+                        color: Color(0xff6290c3),
+                        borderRadius: BorderRadius.only(
+                            bottomLeft: Radius.circular(32.0),
+                            bottomRight: Radius.circular(32.0)),
+                      ),
+                      child: Text(
+                        "Follow a Beacon",
                         style: TextStyle(color: Colors.white),
                         textAlign: TextAlign.center,
                       ),
