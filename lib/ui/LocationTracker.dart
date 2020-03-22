@@ -52,14 +52,6 @@ class _LocationTrackerState extends State<LocationTracker> {
         anchor: Offset(0.5, 0.5),
         //icon: BitmapDescriptor.fromBytes(imageData)
       );
-//      circle = Circle(
-//          circleId: CircleId("car"),
-//          radius: newLocalData.accuracy,
-//          zIndex: 1,
-//          strokeColor: Colors.blue,
-//          center: latlng,
-//          fillColor: Colors.blue.withAlpha(70)
-//      );
     });
   }
 

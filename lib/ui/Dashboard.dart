@@ -1,12 +1,9 @@
-import 'package:beacon_flutter/ui/LocationTracker.dart';
 import 'package:beacon_flutter/ui/ShareLocation.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
 import 'package:location/location.dart';
 import 'package:random_string/random_string.dart';
-import 'package:modal_progress_hud/modal_progress_hud.dart';
 
 class Dashboard extends StatefulWidget {
   @override
@@ -147,6 +144,7 @@ class _DashboardState extends State<Dashboard> {
                   ),
                   InkWell(
                     onTap: () {
+                     // print('button tapped\n\n\n');
                       isVerifying = true;
                       code = randomAlphaNumeric(4);
                       if (selectedTime == '15 minutes')
@@ -166,9 +164,10 @@ class _DashboardState extends State<Dashboard> {
                       };
                       databaseInstance
                           .reference()
-                          .child('groups/' + code)
-                          .push()
-                          .set("${nameController.text}")
+                          .child('groups/' + code+'/${nameController.text}')
+                         // .push()
+                         // .set("${nameController.text}")
+                      .set({'name':'${nameController.text}','sharing':'1'})
                           .catchError((e) {
                         print('Error at Storing Names ' + e + '\n\n');
                       });
@@ -176,7 +175,7 @@ class _DashboardState extends State<Dashboard> {
                       databaseInstance
                           .reference()
                           .child('locations/' + code)
-                          .set(data)
+                          .set(data).then((value){})
                           .catchError((e) {
                         print('Error at Storing Location Data ' + e + '\n\n');
                       });
@@ -190,7 +189,9 @@ class _DashboardState extends State<Dashboard> {
                                   currentLocation.latitude,
                                   currentLocation.longitude,
                                   DateTime.now(),
-                                  expiringAt)));
+                                  expiringAt,
+                                  0,
+                                  nameController.text)));
                     },
                     child: Container(
                       width: double.infinity,
@@ -219,13 +220,13 @@ class _DashboardState extends State<Dashboard> {
 
   Future<void> getData() async {
     snapshot = await databaseInstance.reference().child("locations/").once();
-    print(snapshot.value);
+    //print(snapshot.value);
   }
 
   Future<void> getNames(String gid) async {
     snapshotNames =
         await databaseInstance.reference().child("groups/" + gid).once();
-    print(snapshotNames.value);
+   // print(snapshotNames.value);
   }
 
   Future<String> followBeaconDialog(BuildContext context) async {
@@ -284,28 +285,29 @@ class _DashboardState extends State<Dashboard> {
                   InkWell(
                     onTap: () async {
                       isVerifying = true;
-                      await getData();
+                        await getData();
 
                       Map data = snapshot.value;
 
                       if (data.containsKey(passkeyController.text)) {
                         validateKey = false;
+                        Map values = data[passkeyController.text];
+                        print('values ' + '$values' + '\n\n');
 
-                        print(data[passkeyController.text]);
-                        getNames(passkeyController.text);
+                        await getNames(passkeyController.text);
                         Map names = snapshotNames.value;
-
+                        print('names' + '$names' + '\n\n');
                         if (nameController.text.isEmpty ||
-                            names.containsValue(nameController.text)) {
+                            names.containsKey(nameController.text)) {
                           validateName = true;
                           setState(() {});
                         } else {
-                          setState(() {
-                            databaseInstance
+                          setState(()  {
+                             databaseInstance
                                 .reference()
-                                .child('groups/' + passkeyController.text)
-                                .push()
-                                .set("${nameController.text}")
+                                .child('groups/' + passkeyController.text +'/${nameController.text}')
+
+                                .set({'name':'${nameController.text}','sharing':'0'})
                                 .catchError((e) {
                               print('Error at Storing Names ' + e + '\n\n');
                             });
@@ -316,8 +318,13 @@ class _DashboardState extends State<Dashboard> {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) =>
-                                      LocationTracker(passkeyController.text)));
+                                  builder: (context) => ShareLocation(
+                                      passkeyController.text,
+                                      double.parse(values['latitude']),
+                                      double.parse(values['longitude']),
+                                      DateTime.parse(values['startAt']),
+                                      DateTime.parse(values['expiringAt']),
+                                      1,nameController.text)));
                       } else {
                         setState(() {
                           validateName = false;
